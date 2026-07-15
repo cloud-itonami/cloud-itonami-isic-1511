@@ -1,0 +1,35 @@
+{:itonami.blueprint/id "cloud-itonami-isic-1511"
+ :itonami.blueprint/name "Tanning and dressing of leather"
+ :itonami.blueprint/isic-rev5 "1511"
+ :itonami.blueprint/domain :leather-tanning/plant-operations
+ :itonami.blueprint/license "AGPL-3.0-or-later"
+ :itonami.blueprint/social-impact [:worker-safety :environmental-stewardship :supply-chain-traceability]
+ :itonami.blueprint/governor :leather-tanning-plant-operations-governor
+ :itonami.blueprint/robotics true
+ :itonami.blueprint/required-technologies [:robotics :identity :forms :dmn :bpmn :audit-ledger :cae]
+ :itonami.blueprint/status :public-oss
+ :itonami.blueprint/maturity :implemented
+ :itonami.blueprint/implemented-slice
+ "LeatherTanningAdvisor ⊣ Leather Tanning Plant Operations Governor,
+ langgraph-clj StateGraph, append-only audit ledger. A tannery
+ OPERATIONS COORDINATION actor for leather-tanning plant operations
+ (chrome/vegetable tanning drums, finishing-line equipment,
+ effluent-treatment concerns) -- not direct tanning/finishing-line-
+ equipment operation or effluent-discharge authorization authority.
+ Four ops (`:log-production-batch` / `:schedule-maintenance` /
+ `:flag-safety-concern` / `:coordinate-shipment`), all `:effect
+ :propose` only. Ten concrete governor checks elaborate this
+ blueprint's HARD invariants: propose-only effect, closed op
+ allowlist, closed proposal-effect allowlist (no direct
+ tanning/finishing-line-equipment control), permanent
+ effluent-discharge-authorization block, independent
+ equipment verification/registration before maintenance scheduling,
+ independent batch verification/registration before shipment
+ coordination, independent shipment-area recompute against the
+ batch's own logged output area, double-schedule guard, leather-grade
+ validation, and shrinkage-temperature (hydrothermal stability)
+ plausibility validation. Safety-concern flagging (chemical hazard --
+ chromium VI / effluent-discharge concern / worker safety) ALWAYS
+ escalates to a human tannery supervisor; `:log-production-batch` is
+ the only op eligible to auto-commit, and only at phase 3 when
+ governor-clean."}
