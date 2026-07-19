@@ -83,3 +83,37 @@
           record {:id "test-001" :data "test"}]
       (store/commit-record! s record)
       (is (= record (get (store/get-records s) "test-001"))))))
+
+(deftest test-commit-node-writes-real-store-state-not-just-the-ledger
+  (testing ":commit really calls store/commit-record! against the SSoT
+  read side (batch fields / draft-record histories), not merely the
+  audit ledger -- regression guard for the isic-4322-class bug where a
+  graph's :commit node claimed (in a comment) to be 'the ONLY node
+  that writes the SSoT' but never actually called the real store-write
+  fn, so no operation's effect ever reached the real store through any
+  real graph run and only the audit ledger looked populated. Drives
+  the REAL wired StateGraph via `g/run*` (through exec-op/approve!,
+  not the governor/phase fns in isolation) on both the auto-commit
+  path and the escalate->approve->commit path."
+    (let [s (-> (store/mem-store) (store/sample-data!))
+          actor (op/build s)
+          before-grade (:grade (store/batch s "batch-001"))
+          before-shipped (:shipped-area-sqm (store/batch s "batch-001"))]
+      ;; auto-commit path (phase-3 :auto op, no human involved)
+      (exec-op actor "tA"
+               {:op :log-production-batch :effect :propose :subject "batch-001"
+                :patch {:grade :top-grain}}
+               coordinator)
+      (is (not= before-grade (:grade (store/batch s "batch-001")))
+          "batch-001's own :grade field must actually change in the store, not just appear in the ledger")
+      (is (= :top-grain (:grade (store/batch s "batch-001"))))
+      ;; escalate -> approve -> commit path
+      (exec-op actor "tB"
+               {:op :coordinate-shipment :effect :propose :subject "ship-regress-1"
+                :value {:batch-id "batch-001" :area-sqm 25.0 :destination "buyer-regress"}}
+               coordinator)
+      (approve! actor "tB")
+      (is (= (+ before-shipped 25.0) (:shipped-area-sqm (store/batch s "batch-001")))
+          "batch-001's own :shipped-area-sqm must be independently bumped by the real commit-record! effect")
+      (is (some #(= "ship-regress-1" (get % "shipment_id")) (store/shipment-history s))
+          "a real SHP-... draft record must land in shipment-history, not just an audit-ledger entry"))))
