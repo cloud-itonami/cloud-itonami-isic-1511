@@ -4,7 +4,8 @@
   Drives the REAL actor stack (leathertanning.operation ->
   leathertanning.governor -> leathertanning.store). No invented
   numbers, no timestamps, byte-identical across reruns."
-  (:require [clojure.string :as str]
+  (:require [jp-go-dds.skin]
+            [clojure.string :as str]
             [leathertanning.store :as store]
             [leathertanning.operation :as op]
             [leathertanning.phase :as phase]
@@ -284,7 +285,9 @@ code { font-size: 12px; background: #f4f4f4; padding: 1px 4px; border-radius: 3p
    "<!doctype html>\n"
    "<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n"
    "<title>leathertanning.render-html -- Leather Tanning Plant Operations Governor operator console</title>\n"
-   "<style>\n" css "\n</style>\n"
+   "<style>"
+   (jp-go-dds.skin/dds+skin)
+   "</style>\n"
    "</head>\n<body>\n"
    "<header class=\"bar\"><h1>Leather Tanning Plant Operations Governor -- Operator Console</h1>"
    "<span class=\"badge\">ISIC 1511 &middot; phase " phase/default-phase " (" (:label (get phase/phases phase/default-phase)) ")</span>"
