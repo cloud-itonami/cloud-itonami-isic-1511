@@ -114,7 +114,27 @@
         so-far (:shipped-area-sqm batch 0.0)]
     (and (number? capacity)
          (number? new-area-sqm)
-         (> (+ (double so-far) (double new-area-sqm)) (double capacity)))))
+         (number? so-far)
+         ;; Compared at 1/10000 of a unit, not on raw doubles. A shipment
+         ;; that fills a batch EXACTLY to its recorded capacity is legal,
+         ;; and comparing the raw sum flagged such shipments as over
+         ;; because the sum is not the double nearest the true total.
+         (> (Math/round (* 10000 (+ (double so-far) (double new-area-sqm))))
+            (Math/round (* 10000 (double capacity))))))) 
+
+(defn shipment-area-exceeded-checkable?
+  "Can `batch`'s headroom actually be computed for `new-area-sqm`?
+
+  `shipment-area-exceeded?` answers only `over` / `not over`, and its
+  `(and (number? ...) ...)` guard made every un-checkable case fall
+  through as `not over` -- a batch with no recorded capacity, or a
+  shipment stating no amount, passed the over-capacity check silently.
+  Callers must ask this first: un-checkable is not headroom."
+  [batch new-area-sqm]
+  (boolean (and (map? batch)
+                (number? (:area-sqm batch))
+                (number? (:shipped-area-sqm batch 0.0))
+                (number? new-area-sqm))))
 
 (defn grade-valid?
   "Is `grade` one of the closed, known leather-grade / tanning-
