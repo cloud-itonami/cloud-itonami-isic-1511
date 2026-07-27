@@ -256,7 +256,15 @@
   (when (= op :coordinate-shipment)
     (let [{:keys [batch-id area-sqm]} (:value proposal)
           b (and batch-id (store/batch st batch-id))]
-      (when (and b (registry/shipment-area-exceeded? b area-sqm))
+      (cond
+        ;; No batch, no recorded capacity, or no stated amount: the headroom
+        ;; cannot be computed, so it is not headroom. This used to fall
+        ;; through as "not over capacity" and ship.
+        (not (registry/shipment-area-exceeded-checkable? b area-sqm))
+        [{:rule :shipment-area-exceeded
+          :detail "生産量/既存出荷実績/申請量のいずれかが数値として確定できない -- 空き容量を検算できないため出荷しない"}]
+
+        (registry/shipment-area-exceeded? b area-sqm)
         [{:rule :shipment-area-exceeded
           :detail (str batch-id " の記録済み生産面積(" (:area-sqm b)
                        "㎡)を、既存出荷実績(" (:shipped-area-sqm b 0.0)
