@@ -5,7 +5,7 @@
   leathertanning.governor -> leathertanning.store). No invented
   numbers, no timestamps, byte-identical across reruns."
   (:require [jp-go-dds.skin]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [leathertanning.store :as store]
             [leathertanning.operation :as op]
             [leathertanning.phase :as phase]
