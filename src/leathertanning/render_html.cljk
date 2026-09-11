@@ -30,7 +30,7 @@
   unregistered) and equipment (equip-001 verified+registered tanning
   drum, equip-002 UNVERIFIED/unregistered finishing equipment), and
   `leathertanning.governor`'s real rules. This repo's own
-  `leathertanning.sim` (`clojure -M:dev:run`) was run and cross-checked
+  `leathertanning.sim` (`kbb -M:dev:run`) was run and cross-checked
   against `store.cljc`'s seed data and `governor.cljc`'s own rule
   functions and found trustworthy -- every id/op below mirrors its
   scenario (kept here as a smaller, self-contained subset rather than
