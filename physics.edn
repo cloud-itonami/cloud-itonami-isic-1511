@@ -1,0 +1,32 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:dev:physics` runs it.
+;;
+;; README has no "Robotics premise" section. The tannery runs tanning drums
+;; and finishing lines. Its physical work here: drying tanned leather on a
+;; heated vacuum-dryer plate, and pumping spent chrome tanning float from the
+;; drum to the recovery tank.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isic-1511"
+ :cases
+ [{:id :vacuum-dryer-plate
+   :kind :thermal
+   :procedure "a sammed leather lies flesh side down on a heated vacuum-dryer plate; the grain side under the cover is judged when it reaches drying temperature"
+   :params {:conductivity-w-mk 0.16 :density-kg-m3 900.0 :specific-heat-j-kgk 2500.0
+            :t0-c 20.0 :t-hot-c 70.0 :h-front-w-m2k 400.0 :t-back-ambient-c 20.0 :h-back-w-m2k 5.0
+            :threshold-c 55.0 :duration-s 600.0 :nodes 11}
+   :sweep {:param :thickness-m :values [0.001 0.002 0.003 0.004 0.005]}
+   :quantity :time-to-threshold-s
+   :limit {:max 120.0 :basis "estimate: 2-minute vacuum-dryer cycle for upholstery/shoe-upper leather"}
+   :boundary {:lo 0.0005 :hi 0.01}}
+  {:id :spent-float-to-recovery
+   :kind :pipe-flow
+   :procedure "pump spent chrome tanning float from the tanning drum to the chrome-recovery tank"
+   :params {:diameter-m 0.05 :length-m 30.0 :roughness-m 7.0e-6
+            :density-kg-m3 1050.0 :viscosity-pa-s 1.3e-3 :pump-efficiency 0.55 :elevation-m 3.0}
+   :sweep {:param :q-m3s :values [0.002 0.004 0.006 0.008 0.010]}
+   :quantity :pressure-drop-pa
+   :limit {:max 2.0e5 :basis "estimate: 2 bar differential head of the float-transfer pump at its duty point"}
+   :boundary {:lo 0.001 :hi 0.03}}]}
